@@ -13,6 +13,9 @@ font = pygame.font.SysFont('Arial',40)
 font2 = pygame.font.SysFont('Arial',15)
 colour_inactive = '#bbbbbb'
 colour_active = '#333333'
+screenColour = (100,200,255)
+textboxColour = (100,255,100)
+inputboxColour = (255,255,255)
 
 buttons = []
 inputboxes = []
@@ -63,12 +66,16 @@ class Button():
         screen.blit(self.buttonSurface, self.buttonRect)
         
 def myFunction():
-    pay,total,unit = mortgage(float(t1.text),float(t2.text),float(t3.text),t4.text)
-    print('£' + pay + ' per ' + unit)
-    print('£' + total + ' in total')
-    answer = '£' + pay + ' per ' + unit + '   £' + total + ' in total'
+    try:
+        if mortgage(float(t1.text),float(t2.text),float(t3.text),t4.text) == None:
+            answer = 'Error!!!'
+        else:
+            pay,total,unit = mortgage(float(t1.text),float(t2.text),float(t3.text),t4.text)
+            answer = '£' + pay + ' per ' + unit + '   £' + total + ' in total'
+    except:
+        answer = 'Error!!!'
     
-    screen.fill((255,255,255),rect=(100,500,700,200))
+    screen.fill(screenColour,rect=(100,500,700,200))
     ans_surface = font.render(answer,True,(0,0,0))
     screen.blit(ans_surface, (100,500))
 
@@ -99,12 +106,12 @@ class InputBox:
             if self.active:
                 if event.key == pygame.K_RETURN:
                     self.textbox.setText(self.text)
-                    screen.fill((255,255,255),self.rect)
+                    screen.fill(screenColour,self.rect)
                     self.textbox.draw(screen)
                     self.value = self.text
                     self.text = ''
                 elif event.key == pygame.K_BACKSPACE:
-                    screen.fill((255,255,255),self.rect)
+                    screen.fill(screenColour,self.rect)
                     self.text = self.text[:-1]
                 else:
                     self.text += event.unicode
@@ -114,23 +121,25 @@ class InputBox:
         self.rect.width = max(200, self.txt_surface.get_width())
         self.rect.height = self.txt_surface.get_height()
     def draw(self, screen):
+        screen.fill(inputboxColour,self.rect)
         screen.blit(self.txt_surface, (self.rect.x+5,self.rect.y+5))
         pygame.draw.rect(screen, self.colour, self.rect, 2)
     
 class TextBox:
     def __init__(self,x,y,w,h,text=''):
-        self.rect = pygame.Rect(x,y,w,h)
+        self.colour = textboxColour
         self.text = text
-        self.textSurface = font.render(self.text,True,(0,0,0))
+        self.textSurface = font.render(self.text,True,self.colour)
+        self.rect = pygame.Rect(x,y,self.textSurface.get_width(),self.textSurface.get_height())
         textboxes.append(self)
         
     def draw(self,screen):
-        screen.fill((255,255,255),self.rect)
         self.rect.w = max(200,self.textSurface.get_width())
         self.rect.h = self.textSurface.get_height()
+        screen.fill(self.colour,self.rect)
+        pygame.draw.rect(screen, self.colour,self.rect,2)
         screen.blit(self.textSurface, (self.rect.x+5, self.rect.y+5))
-        pygame.draw.rect(screen, (0,0,0),self.rect,2)
-    
+        
     def setText(self,newtext):
         self.text = newtext
         self.textSurface = font.render(newtext,True,(0,0,0))
@@ -146,24 +155,25 @@ class Label:
     def draw(self,screen):
         screen.blit(self.textSurface, (self.x+5, self.y+5))
         
-        
-        
 b1 = Button(800, 600, 100, 50, 'Enter', myFunction)
+
 t1 = TextBox(500,50,140,32)
 t2 = TextBox(500,150,140,32)
 t3 = TextBox(500,250,140,32)
 t4 = TextBox(500,350,140,32)
+
 l1 = Label(100,30,140,32,'Enter interest rate: ')
 l2 = Label(100,130,140,32,'Enter the loan: ')
 l3 = Label(100,230,140,32,'Enter the time period in years: ')
 l4 = Label(100,330,140,32,'Enter the compound interval (Weekly, Monthly or Daily): ')
+
 i1 = InputBox(100,50,140,32,t1)
 i2 = InputBox(100,150,140,32,t2)
 i3 = InputBox(100,250,140,32,t3)
 i4 = InputBox(100,350,140,32,t4)
 
 
-screen.fill((255,255,255))
+screen.fill(screenColour)
 for label in labels:
     label.draw(screen)
 while True:
@@ -174,6 +184,7 @@ while True:
             
         for inputbox in inputboxes:
             inputbox.process(event)
+            
     for inputbox in inputboxes:
         inputbox.resize()
         inputbox.draw(screen)
